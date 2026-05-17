@@ -1,8 +1,8 @@
 use super::state::LabelGalleys;
 use super::OverlayApp;
 use crate::keyboard::Keyboard;
-use crate::layout_key::{KeycodeKind, LayoutKey};
-use crate::settings::ThemeColor;
+use crate::layout_key::{KeycodeKind, Label, LayoutKey};
+use crate::settings::{ModLabelStyle, ThemeColor};
 use eframe::egui::{self, Window};
 
 fn rotate_point(point: egui::Pos2, origin: egui::Pos2, angle_rad: f32) -> egui::Pos2 {
@@ -72,6 +72,20 @@ impl OverlayApp {
         let fits_width =
             |galley: &std::sync::Arc<egui::Galley>, max: f32| galley.rect.width() <= max;
         let max_width = rect.width() * 0.85;
+
+        let key_owned;
+        let key: &LayoutKey =
+            if key.kind == KeycodeKind::Modifier && key.symbol.is_some() && !key.tap.is_empty() {
+                let mut k = key.clone();
+                match self.settings.active.mod_label_style {
+                    ModLabelStyle::Text => k.symbol = None,
+                    ModLabelStyle::Symbols => k.tap = Label::default(),
+                }
+                key_owned = k;
+                &key_owned
+            } else {
+                key
+            };
 
         let mut galleys = if let Some(symbol) = &key.symbol {
             let symbol_font = egui::FontId::proportional(0.33 * size * font_scale);

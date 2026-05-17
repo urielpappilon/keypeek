@@ -86,6 +86,38 @@ impl FromStr for WindowPosition {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum ModLabelStyle {
+    #[default]
+    Text,
+    Symbols,
+}
+
+impl fmt::Display for ModLabelStyle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                ModLabelStyle::Text => "Text",
+                ModLabelStyle::Symbols => "Symbols",
+            }
+        )
+    }
+}
+
+impl FromStr for ModLabelStyle {
+    type Err = ParseSettingsError;
+
+    fn from_str(value: &str) -> Result<Self, Self::Err> {
+        match value {
+            "Text" => Ok(ModLabelStyle::Text),
+            "Symbols" => Ok(ModLabelStyle::Symbols),
+            _ => Err(ParseSettingsError),
+        }
+    }
+}
+
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub struct ThemeColor {
     pub r: u8,
@@ -175,6 +207,7 @@ pub struct Settings {
     pub theme: ThemeSettings,
     pub show_on_layer_change: bool,
     pub last_connection: Option<ConnectionSpec>,
+    pub mod_label_style: ModLabelStyle,
 }
 
 impl Default for Settings {
@@ -189,6 +222,7 @@ impl Default for Settings {
             theme: ThemeSettings::default(),
             show_on_layer_change: true,
             last_connection: None,
+            mod_label_style: ModLabelStyle::Symbols,
         }
     }
 }
@@ -260,6 +294,7 @@ impl Settings {
             section.set(format!("layer_color_{index}"), color.to_string());
         }
         section.set("font_color", self.theme.font_color.to_string());
+        section.set("mod_label_style", self.mod_label_style.to_string());
         conf.write_to_file(path)
     }
 
@@ -312,6 +347,11 @@ impl Settings {
         if let Some(val) = section.get("font_color") {
             if let Ok(parsed) = val.parse() {
                 s.theme.font_color = parsed;
+            }
+        }
+        if let Some(val) = section.get("mod_label_style") {
+            if let Ok(parsed) = val.parse() {
+                s.mod_label_style = parsed;
             }
         }
         Some(s)

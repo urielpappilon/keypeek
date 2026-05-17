@@ -1,6 +1,6 @@
 use super::state::AppConnectionState;
 use super::OverlayApp;
-use crate::settings::WindowPosition;
+use crate::settings::{ModLabelStyle, WindowPosition};
 use eframe::egui::{self, Window};
 
 impl OverlayApp {
@@ -254,6 +254,21 @@ impl OverlayApp {
                                 &mut self.settings.draft.show_on_layer_change,
                                 "Automatically show overlay when switching layers",
                             );
+                            ui.end_row();
+
+                            ui.label("Modifier labels");
+                            egui::ComboBox::from_id_salt("mod_label_style_combo")
+                                .width(ui.available_width())
+                                .selected_text(self.settings.draft.mod_label_style.to_string())
+                                .show_ui(ui, |ui| {
+                                    for style in [ModLabelStyle::Text, ModLabelStyle::Symbols] {
+                                        ui.selectable_value(
+                                            &mut self.settings.draft.mod_label_style,
+                                            style,
+                                            style.to_string(),
+                                        );
+                                    }
+                                });
                             ui.end_row();
                         });
                 });

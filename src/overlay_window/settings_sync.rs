@@ -18,7 +18,8 @@ impl OverlayApp {
             || self.settings.active.timeout != self.settings.draft.timeout
             || self.settings.active.theme != self.settings.draft.theme
             || self.settings.active.show_on_layer_change
-                != self.settings.draft.show_on_layer_change;
+                != self.settings.draft.show_on_layer_change
+            || self.settings.active.mod_label_style != self.settings.draft.mod_label_style;
 
         if !changed {
             return;
@@ -33,6 +34,7 @@ impl OverlayApp {
         self.settings.active.timeout = self.settings.draft.timeout;
         self.settings.active.theme = self.settings.draft.theme.clone();
         self.settings.active.show_on_layer_change = self.settings.draft.show_on_layer_change;
+        self.settings.active.mod_label_style = self.settings.draft.mod_label_style;
 
         if let AppConnectionState::Connected { keyboard } = &self.session.connection {
             if old_timeout != self.settings.active.timeout {
