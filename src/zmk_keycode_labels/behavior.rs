@@ -29,6 +29,7 @@ pub fn behavior_to_layout_key(behavior: &Behavior) -> Option<LayoutKey> {
                     format!("L{}", layer_id),
                     format!("L{}", layer_id),
                 )),
+                hold_symbol: None,
                 symbol: tap_key.symbol,
                 kind: KeycodeKind::Special,
                 layer_ref: Some(*layer_id as u8),
@@ -37,14 +38,10 @@ pub fn behavior_to_layout_key(behavior: &Behavior) -> Option<LayoutKey> {
         Behavior::ModTap { hold, tap } => {
             let hold_key = hid_usage_to_layout_key(*hold);
             let tap_key = hid_usage_to_layout_key(*tap);
-            let hold_label = if let Some(symbol) = hold_key.symbol {
-                Label::new(symbol)
-            } else {
-                hold_key.tap
-            };
             Some(LayoutKey {
                 tap: tap_key.tap,
-                hold: Some(hold_label),
+                hold: Some(hold_key.tap),
+                hold_symbol: hold_key.symbol,
                 symbol: tap_key.symbol,
                 kind: KeycodeKind::Modifier,
                 layer_ref: None,

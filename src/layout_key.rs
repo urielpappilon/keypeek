@@ -43,6 +43,12 @@ pub struct LayoutKey {
     /// Hold action label for hold-tap keys (e.g., "Shift" for MT(LSFT, KC_A))
     pub hold: Option<Label>,
 
+    /// Symbol/icon for the hold portion of hold-tap keys, when the held
+    /// keycode has both a text label and a symbol (e.g. ⇧ for Shift).
+    /// Lets the renderer pick text vs symbol based on ModLabelStyle without
+    /// the construction site baking one choice in.
+    pub hold_symbol: Option<String>,
+
     /// Symbol/icon for the key (using Phosphor icon font)
     pub symbol: Option<String>,
 
@@ -58,6 +64,7 @@ impl Default for LayoutKey {
         LayoutKey {
             tap: Label::default(),
             hold: None,
+            hold_symbol: None,
             symbol: None,
             kind: KeycodeKind::Basic,
             layer_ref: None,

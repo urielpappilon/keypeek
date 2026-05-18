@@ -73,19 +73,38 @@ impl OverlayApp {
             |galley: &std::sync::Arc<egui::Galley>, max: f32| galley.rect.width() <= max;
         let max_width = rect.width() * 0.85;
 
+        let needs_tap_shadow = key.kind == KeycodeKind::Modifier
+            && key.symbol.is_some()
+            && !key.tap.is_empty();
+        let needs_hold_shadow = key.kind == KeycodeKind::Modifier
+            && key.hold_symbol.is_some()
+            && key.hold.as_ref().map_or(false, |h| !h.is_empty());
         let key_owned;
-        let key: &LayoutKey =
-            if key.kind == KeycodeKind::Modifier && key.symbol.is_some() && !key.tap.is_empty() {
-                let mut k = key.clone();
-                match self.settings.active.mod_label_style {
-                    ModLabelStyle::Text => k.symbol = None,
-                    ModLabelStyle::Symbols => k.tap = Label::default(),
+        let key: &LayoutKey = if needs_tap_shadow || needs_hold_shadow {
+            let mut k = key.clone();
+            match self.settings.active.mod_label_style {
+                ModLabelStyle::Text => {
+                    if needs_tap_shadow {
+                        k.symbol = None;
+                    }
+                    if needs_hold_shadow {
+                        k.hold_symbol = None;
+                    }
                 }
-                key_owned = k;
-                &key_owned
-            } else {
-                key
-            };
+                ModLabelStyle::Symbols => {
+                    if needs_tap_shadow {
+                        k.tap = Label::default();
+                    }
+                    if needs_hold_shadow {
+                        k.hold = None;
+                    }
+                }
+            }
+            key_owned = k;
+            &key_owned
+        } else {
+            key
+        };
 
         let mut galleys = if let Some(symbol) = &key.symbol {
             let symbol_font = egui::FontId::proportional(0.33 * size * font_scale);
@@ -200,8 +219,8 @@ impl OverlayApp {
             }
         };
 
+        let hold_font = egui::FontId::proportional(0.20 * size * font_scale);
         if let Some(hold) = &key.hold {
-            let hold_font = egui::FontId::proportional(0.20 * size * font_scale);
             let hold_galley = create_galley(hold.full.clone(), hold_font.clone());
             if fits_width(&hold_galley, max_width) {
                 galleys.hold = Some(hold_galley);
@@ -210,6 +229,11 @@ impl OverlayApp {
                 if fits_width(&short_galley, max_width) {
                     galleys.hold = Some(short_galley);
                 }
+            }
+        } else if let Some(hold_symbol) = &key.hold_symbol {
+            let hold_galley = create_galley(hold_symbol.clone(), hold_font);
+            if fits_width(&hold_galley, max_width) {
+                galleys.hold = Some(hold_galley);
             }
         }
 
